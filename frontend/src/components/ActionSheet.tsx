@@ -1,5 +1,3 @@
-
-
 import { Button } from "@/components/ui/button";
 
 import {
@@ -24,24 +22,29 @@ import {
 } from "@/components/ui/sheet";
 import type { PriceTriggerMetadata } from "@/nodes/triggers/PriceTrigger";
 import type { TimerNodeMetadata } from "@/nodes/triggers/Timer";
+import { SUPPORTED_ASSETS } from "./TriggerSheet";
 import type { NodeKind, NodeMetadata } from "./Workflow";
 import { Input } from "./ui/input";
 
 
 
-const SUPPORTED_TRIGGERS =[{
-    id: "timer",
-    title: "Timer",
-    description: "Run this trigger every x seconds"
+const SUPPORTED_ACTIONS =[{
+    id: "hyperliquid",
+    title: "Hyperliquid",
+    description: "Place a trade on hyperliquid",
 },{
-    id:"price-trigger",
-    title: "Price Trigger",
-    description: "Runs whenever the price goes above or below a certain number for an asset"
+    id:"lighter",
+    title: "Lighter",
+    description: "Place a trade on hyperliquid"
+},{
+    id:"backpack",
+    title: "Backpack",
+    description: "Place a trade on hyperliquid"
 }]
 
-export const SUPPORTED_ASSETS = ["BTC", "DOGE", "ETH", "SOL", "BNB", "XRP"];
 
-export const TriggerSheet = ({
+
+export const ActionSheet = ({
     onSelect
 }:{
     onSelect: (kind: NodeKind, metadata: NodeMetadata) => void
@@ -49,7 +52,7 @@ export const TriggerSheet = ({
     const [metadata, setMetadata] = useState<PriceTriggerMetadata | TimerNodeMetadata>({
         time: 3600
     });
-    const [selectedTrigger, setSelectedTrigger] = useState(SUPPORTED_TRIGGERS[0].id)
+    const [selectedTrigger, setSelectedTrigger] = useState(SUPPORTED_ACTIONS[0].id)
 
 
 
@@ -73,7 +76,7 @@ export const TriggerSheet = ({
                             <SelectContent>
                                 <SelectGroup>
                                 {/* <SelectLabel>Fruits</SelectLabel> */}
-                                {SUPPORTED_TRIGGERS
+                                {SUPPORTED_ACTIONS
                                     .map(
                                         ({id, title})=> <>
                                             {/* <SelectLabel>{title}</SelectLabel> */}
