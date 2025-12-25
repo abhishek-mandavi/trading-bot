@@ -1,13 +1,22 @@
-import { PriceTrigger } from '@/nodes/triggers/PriceTrigger';
-import { Timer } from '@/nodes/triggers/Timer';
+import Backpack from '@/nodes/actions/Backpack';
+import Hyperliquid from '@/nodes/actions/Hyperliquid';
+import type { TradingMetadata } from '@/nodes/actions/Lighter';
+import { Lighter } from '@/nodes/actions/Lighter';
+import { PriceTrigger, type PriceTriggerMetadata } from '@/nodes/triggers/PriceTrigger';
+import { Timer, type TimerNodeMetadata } from '@/nodes/triggers/Timer';
 import { ReactFlow, addEdge, applyEdgeChanges, applyNodeChanges } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useCallback, useState } from 'react';
+import { ActionSheet } from './ActionSheet';
 import { TriggerSheet } from './TriggerSheet';
+
 
 const nodeTypes ={
   "price-trigger": PriceTrigger,
-  "timer": Timer
+  "timer": Timer,
+  lighter: Lighter,
+  hyperliquid: Hyperliquid,
+  backpack: Backpack,
 }
 
 export type NodeKind = "price-trigger" | "timer" | "hyperliquid" | "backpack" | "lighter"
@@ -23,7 +32,7 @@ interface Nodetype{
   position: { x: number, y: number},
 }
 
-export type NodeMetadata = any;
+export type NodeMetadata = TradingMetadata | PriceTriggerMetadata | TimerNodeMetadata;
 
 interface Edge{
     id:string,
@@ -34,6 +43,13 @@ interface Edge{
 export default function App() {
   const [nodes, setNodes] = useState<Nodetype[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+  const [selectAction, setSelectedAction] = useState<{
+    position:{
+      x:number,
+      y:number,
+    },
+    startingNodeId: string,
+  } | null>(null);
  
   const onNodesChange = useCallback(
     (changes: any) => setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
@@ -53,6 +69,10 @@ export default function App() {
   const onConnectEnd = useCallback(
     (params,connectionInfo) =>{
       if(!connectionInfo.isValid){
+        setSelectedAction({
+          startingNodeId: connectionInfo.fromNode.id,
+          position: connectionInfo.fromNode.to
+        })
         console.log(connectionInfo.fromNode.id)
         console.log(connectionInfo.fromNode.to)
       }
@@ -62,31 +82,58 @@ export default function App() {
 
   return (
     <div 
-        style={{ width: '100vw', height: '100vh' }}
+      style={{ width: '100vw', height: '100vh' }}
     >
-        {!nodes.length && <TriggerSheet onSelect={(type,metadata) => {
+      {!nodes.length && <TriggerSheet onSelect={(type,metadata) => {
+        setNodes([...nodes,{
+          id: Math.random().toString(),
+          type,
+          data: {
+            kind: "trigger",
+            metadata,
+                // label: kind
+          },
+          position: {x:0, y:0}
+                
+        }])
+      }}/>}
+
+      {
+        selectAction && 
+        <ActionSheet
+          onSelect={(type,metadata) => {
+            const nodeId = Math.random().toString();
             setNodes([...nodes,{
-              id: Math.random().toString(),
+              id: nodeId,
               type,
               data: {
-                kind: "trigger",
+                kind: "action",
                 metadata,
-                // label: kind
               },
-              position: {x:0, y:0}
-                
+              position: selectAction.position
+                    
+            }]);
+            setEdges([...edges,{
+              id: `${selectAction.startingNodeId}-${nodeId}`,
+              source: selectAction.startingNodeId,
+              target: nodeId,
             }])
-        }}/>}
-        <ReactFlow
-          nodeTypes={nodeTypes}
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onConnectEnd={onConnectEnd}
-          fitView
+            setSelectedAction(null);
+          }}
         />
+      }
+
+
+      <ReactFlow
+        nodeTypes={nodeTypes}
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onConnectEnd={onConnectEnd}
+        fitView
+      />
     </div>
   );
 }
