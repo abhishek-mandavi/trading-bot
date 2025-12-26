@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
@@ -37,25 +36,21 @@ export const ActionSheet = ({
 }: {
   onSelect: (kind: NodeKind, metadata: NodeMetadata) => void;
 }) => {
-  const [selectedAction, setSelectedAction] = useState<NodeKind>(
-    SUPPORTED_ACTIONS[0].id as NodeKind
-  );
+  const [selectedAction, setSelectedAction] = useState(SUPPORTED_ACTIONS[0].id );
 
-  const [metadata, setMetadata] = useState<TradingMetadata>({
-    type: "LONG",
-    symbol: "",
-    qty: 0,
-  });
+  const [metadata, setMetadata] = useState<TradingMetadata | null>(null);
 
   return (
     <Sheet open>
-      {/* <SheetTrigger asChild>
-        <Button variant="outline">Open</Button>
-      </SheetTrigger> */}
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>Select action</SheetTitle>
-          <SheetDescription>
+      <SheetContent className="flex flex-col gap-6">
+        <SheetHeader className="space-y-2">
+          <SheetTitle className="text-lg font-semibold">
+            Select action
+          </SheetTitle>
+
+          <SheetDescription className="space-y-5">
+            Select the action that you need  
+            
             <Select
               value={selectedAction}
               onValueChange={(value) =>
@@ -77,100 +72,101 @@ export const ActionSheet = ({
             </Select>
 
             {(selectedAction === "hyperliquid" ||
-                selectedAction === "lighter" ||
-                selectedAction === "backpack") && (
-              <>
-                <div className="pt-4">
-                    Type
+              selectedAction === "lighter" ||
+              selectedAction === "backpack") && (
+              <div className="space-y-4">
+                <div className="text-sm font-medium text-muted-foreground">
+                  Type
+                </div>
+
+                <Select value={metadata?.type}  
+                  onValueChange={(value) =>
+                    setMetadata((metadata) => ({
+                      ...metadata,
+                      type: value,
+                    }))
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="long">LONG</SelectItem>
+                      <SelectItem value="short">SHORT</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+
+                <div className="text-sm font-medium text-muted-foreground">
+                  Symbol
                 </div>
 
                 <Select
-                    value={metadata?.type}
-                    onValueChange={(value) =>
-                        setMetadata((metadata) => ({
-                        ...metadata,
-                        type: value as "LONG" | "SHORT",
-                        }))
-                    }
-                >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectGroup>
-                        <SelectItem value="long">LONG</SelectItem>
-                        <SelectItem value="short">SHORT</SelectItem>
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
-
-                <div className="pt-4">
-                    Symbol
-                </div>
-                  <Select value={metadata?.symbol} onValueChange={(value) => setMetadata(metadata => ({ ...metadata, symbol: value }))}>
-                    <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select symbol" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectGroup>
-                            {SUPPORTED_ASSETS.map(
-                                asset =>
-                                <SelectItem key={asset} value={asset}>
-                                    {asset}
-                                </SelectItem>
-                            )}
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
-                
-
-                <div className="pt-4">Quantity</div>
-                <Input
-                  value={metadata.quantity}
-                  onChange={(e) =>
-                    setMetadata(metadata => ({
+                  value={metadata?.symbol}
+                  onValueChange={(value) =>
+                    setMetadata((metadata) => ({
                       ...metadata,
-                      qty: Number(e.target.value),
+                      symbol: value,
                     }))
                   }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select asset" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {SUPPORTED_ASSETS.map((asset) => (
+                        <SelectItem key={asset} value={asset}>
+                          {asset}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+
+                <div className="text-sm font-medium text-muted-foreground">
+                  Quantity
+                </div>
+
+                <Input
+                  type="number"
+                  className="w-full
+                    [appearance:textfield]
+                    [&::-webkit-outer-spin-button]:appearance-auto
+                    [&::-webkit-inner-spin-button]:appearance-auto
+                  "
+                  value={metadata?.quantity}
+                  onChange={(e) =>{
+                    setMetadata((metadata) => ({
+                      ...metadata,
+                      quantity:Number(e.target.value),
+                    }));
+                  }}
                 />
-              </>
+              </div>
             )}
           </SheetDescription>
         </SheetHeader>
 
-        <SheetFooter>
+        <SheetFooter className="flex gap-2 pt-4">
           <Button
+            className="flex-1"
             onClick={() => {
-              onSelect(selectedAction, metadata);
+
+              onSelect(selectedAction,metadata);
             }}
           >
             Save Changes
           </Button>
 
-          <SheetClose asChild>
-            <Button variant="outline">Close</Button>
-          </SheetClose>
+          {/* <SheetClose asChild>
+            <Button variant="outline" className="flex-1">
+              Close
+            </Button>
+          </SheetClose> */}
         </SheetFooter>
       </SheetContent>
     </Sheet>
   );
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

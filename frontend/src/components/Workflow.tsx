@@ -1,5 +1,5 @@
-import Backpack from '@/nodes/actions/Backpack';
-import Hyperliquid from '@/nodes/actions/Hyperliquid';
+import { Backpack } from '@/nodes/actions/Backpack';
+import { Hyperliquid } from '@/nodes/actions/Hyperliquid';
 import type { TradingMetadata } from '@/nodes/actions/Lighter';
 import { Lighter } from '@/nodes/actions/Lighter';
 import { PriceTrigger, type PriceTriggerMetadata } from '@/nodes/triggers/PriceTrigger';
@@ -14,9 +14,9 @@ import { TriggerSheet } from './TriggerSheet';
 const nodeTypes ={
   "price-trigger": PriceTrigger,
   "timer": Timer,
-  lighter: Lighter,
-  hyperliquid: Hyperliquid,
-  backpack: Backpack,
+  "lighter": Lighter,
+  "hyperliquid": Hyperliquid,
+  "backpack": Backpack,
 }
 
 export type NodeKind = "price-trigger" | "timer" | "hyperliquid" | "backpack" | "lighter"
@@ -35,22 +35,22 @@ interface Nodetype{
 export type NodeMetadata = TradingMetadata | PriceTriggerMetadata | TimerNodeMetadata;
 
 interface Edge{
-    id:string,
-    source:string,
-    target:string
+  id:string,
+  source:string,
+  target:string
 }
 
 export default function App() {
   const [nodes, setNodes] = useState<Nodetype[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
-  const [selectAction, setSelectedAction] = useState<{
+  const [selectAction, setSelectAction] = useState<{
     position:{
       x:number,
       y:number,
     },
     startingNodeId: string,
   } | null>(null);
- 
+
   const onNodesChange = useCallback(
     (changes: any) => setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
     [],
@@ -66,12 +66,18 @@ export default function App() {
     [],
   );
 
+  const POSITION_OFFSET = 4
+
   const onConnectEnd = useCallback(
     (params,connectionInfo) =>{
       if(!connectionInfo.isValid){
-        setSelectedAction({
+        console.log(connectionInfo)
+        setSelectAction({
           startingNodeId: connectionInfo.fromNode.id,
-          position: connectionInfo.fromNode.to
+          position:{
+            x:connectionInfo.from.x + POSITION_OFFSET,
+            y: connectionInfo.from.y + POSITION_OFFSET
+          }
         })
         console.log(connectionInfo.fromNode.id)
         console.log(connectionInfo.fromNode.to)
@@ -84,22 +90,20 @@ export default function App() {
     <div 
       style={{ width: '100vw', height: '100vh' }}
     >
-      {!nodes.length && <TriggerSheet onSelect={(type,metadata) => {
-        setNodes([...nodes,{
-          id: Math.random().toString(),
-          type,
-          data: {
-            kind: "trigger",
-            metadata,
-                // label: kind
-          },
-          position: {x:0, y:0}
-                
-        }])
-      }}/>}
+    {!nodes.length && <TriggerSheet onSelect={(type,metadata) => {
+      setNodes([...nodes,{
+        id: Math.random().toString(),
+        type,
+        data: {
+          kind: "trigger",
+          metadata,
+        },
+        position: {x:0, y:0}
+      }])
+    }}/>}
 
       {
-        selectAction && 
+        selectAction &&
         <ActionSheet
           onSelect={(type,metadata) => {
             const nodeId = Math.random().toString();
@@ -108,7 +112,10 @@ export default function App() {
               type,
               data: {
                 kind: "action",
-                metadata,
+                metadata:{
+                  ...metadata,
+                  title: `${type} trade`,
+                },
               },
               position: selectAction.position
                     
@@ -118,10 +125,11 @@ export default function App() {
               source: selectAction.startingNodeId,
               target: nodeId,
             }])
-            setSelectedAction(null);
+            setSelectAction(null);
           }}
         />
       }
+
 
 
       <ReactFlow

@@ -11,11 +11,12 @@ export function Timer ({data}:{
     isConnectable: boolean
 }) {
     return(
-        <div className="p-4 border">
-            Every {data.metadata.time / 3600} seconds
-            <Handle type="source" position={Position.Right}>
-
-            </Handle>
+        <div className="text-black font-medium rounded-lg border bg-background p-3 space-y-1">
+            Timer
+            <div className="text-xs text-muted-foreground">
+                Every {data.metadata.time} seconds
+               <Handle type="source" position={Position.Right}></Handle>
+            </div>
         </div>
     )
 }

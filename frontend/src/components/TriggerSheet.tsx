@@ -1,5 +1,4 @@
 
-
 import { Button } from "@/components/ui/button";
 
 import {
@@ -26,7 +25,6 @@ import type { PriceTriggerMetadata } from "@/nodes/triggers/PriceTrigger";
 import type { TimerNodeMetadata } from "@/nodes/triggers/Timer";
 import type { NodeKind, NodeMetadata } from "./Workflow";
 import { Input } from "./ui/input";
-
 
 
 const SUPPORTED_TRIGGERS =[{
